@@ -1,1 +1,453 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Київська Русь — Історія України</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
 
+        body {
+            /* Максимально темний, глибокий чорний колір з ледь помітним глибоким фіолетовим відблиском */
+            background-color: #010002;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(76, 29, 149, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(45, 10, 90, 0.1) 0%, transparent 55%),
+                radial-gradient(circle at 50% 50%, rgba(5, 2, 10, 0.98) 0%, #010002 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #f8fafc;
+            padding: 20px;
+            user-select: none;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Вотермарк (зроблений практично невидимим на такому темному фоні) */
+        .watermark {
+            position: fixed;
+            bottom: 12px;
+            left: 16px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.015);
+            letter-spacing: 0.5px;
+            font-weight: 400;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 36px;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .deck {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            height: 410px;
+        }
+
+        .card-scene {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            perspective: 2000px;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.93) translateY(14px);
+            transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .card-scene.is-active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1) translateY(0);
+        }
+
+        @media (hover: hover) {
+            .card-scene.is-active:hover {
+                transform: translateY(-7px);
+            }
+        }
+
+        .card-scene.is-active:active {
+            transform: scale(0.985);
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 2.1s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 32px;
+            padding: 44px 38px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            /* Насичений темно-фіолетово-чорний градієнт карток */
+            background: linear-gradient(145deg, rgba(22, 10, 45, 0.95) 0%, rgba(5, 2, 12, 0.98) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            box-shadow: 
+                0 35px 70px -15px rgba(1, 0, 3, 0.98),
+                0 0 50px rgba(76, 29, 149, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.18),
+                inset 0 -25px 50px rgba(5, 2, 10, 0.9);
+            transition: border-color 1s ease, box-shadow 1s ease;
+        }
+
+        .card-face::before {
+            content: '';
+            position: absolute;
+            inset: 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.15);
+            background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08), transparent 70%);
+            pointer-events: none;
+            transition: border-color 1s ease;
+        }
+
+        .card-face::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 22%;
+            right: 22%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.5), transparent);
+            pointer-events: none;
+        }
+
+        @media (hover: hover) {
+            .card-scene:hover .card-face {
+                border-color: rgba(168, 85, 247, 0.45);
+                box-shadow: 
+                    0 45px 85px -15px rgba(1, 0, 3, 0.99),
+                    0 0 65px rgba(139, 92, 246, 0.3),
+                    inset 0 1px 1px rgba(255, 255, 255, 0.25),
+                    inset 0 -25px 50px rgba(8, 3, 18, 0.95);
+            }
+
+            .card-scene:hover .card-face::before {
+                border-color: rgba(168, 85, 247, 0.3);
+            }
+        }
+
+        .date-display {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.1rem;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: 0.5px;
+            color: #e9d5ff;
+            background: linear-gradient(135deg, #ffffff 25%, #e9d5ff 65%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 6px 22px rgba(139, 92, 246, 0.35));
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(145deg, rgba(28, 12, 55, 0.96) 0%, rgba(4, 1, 8, 0.99) 100%);
+        }
+
+        .event-description {
+            font-size: 1.15rem;
+            line-height: 1.65;
+            font-weight: 400;
+            color: #f3e8ff;
+        }
+
+        .event-description strong {
+            color: #e9d5ff;
+            font-weight: 600;
+            text-shadow: 0 0 18px rgba(192, 132, 252, 0.45);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+        }
+
+        .nav-btn {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            background: linear-gradient(145deg, rgba(22, 10, 45, 0.9) 0%, rgba(5, 2, 12, 0.95) 100%);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            color: #f3e8ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 12px 28px -5px rgba(1, 0, 3, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.65s ease, color 0.65s ease, box-shadow 0.65s ease;
+        }
+
+        @media (hover: hover) {
+            .nav-btn:hover {
+                border-color: rgba(192, 132, 252, 0.55);
+                color: #ffffff;
+                transform: translateY(-3px);
+                box-shadow: 0 18px 34px -5px rgba(1, 0, 3, 0.95), 0 0 25px rgba(139, 92, 246, 0.3);
+            }
+        }
+
+        .nav-btn:active {
+            transform: scale(0.92);
+            border-color: rgba(192, 132, 252, 0.65);
+        }
+
+        .nav-btn svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .counter {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 2.5px;
+            color: rgba(233, 213, 255, 0.65);
+            min-width: 68px;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .deck {
+                height: 380px;
+            }
+            .card-face {
+                padding: 36px 24px;
+            }
+            .date-display {
+                font-size: 2.6rem;
+            }
+            .event-description {
+                font-size: 1.05rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Вотермарк -->
+    <div class="watermark">Зробив Єгор Насібов</div>
+
+    <div class="wrapper">
+        <div class="deck" id="deck">
+
+            <!-- Картка 1 -->
+            <div class="card-scene is-active" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">988 р.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description">Початок запровадження князем <strong>Володимиром Великим</strong> християнства як державної релігії Русі.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Картка 2 -->
+            <div class="card-scene" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">1036 р.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description"><strong>Розгром Ярославом печенігів</strong> під Києвом, після чого напад на руські землі припинився.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Картка 3 -->
+            <div class="card-scene" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">1051 р.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description">Перша згадка в літописі про заснування <strong>Києво-Печерського монастиря</strong> (лаври).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Картка 4 -->
+            <div class="card-scene" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">1054–1073 рр.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description">Правління <strong>тріумвірату Ярославичів</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Картка 5 -->
+            <div class="card-scene" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">1068 р.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description">Перший великий напад половців на Русь і <strong>розгром руського війська на річці Альта</strong>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Картка 6 -->
+            <div class="card-scene" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">1072 р.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description">Прийняття збірника законів <strong>«Правда Ярославичів»</strong> на з'їзді у Вишгороді.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Картка 7 -->
+            <div class="card-scene" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">1097 р.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description"><strong>Любецький з'їзд князів</strong>. Запровадження принципу спадкового володіння князівствами («кожен хай держить отчину свою»).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Картка 8 -->
+            <div class="card-scene" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">1113–1125 рр.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description">Правління <strong>Володимира Мономаха</strong> в Києві. Останнє потужне піднесення єдиної Київської держави.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Картка 9 -->
+            <div class="card-scene" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">1113 р.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description">Прийняття <strong>«Статуту Володимира Всеволодовича»</strong>, який обмежив лихварство та полегшив становище закупів.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Картка 10 -->
+            <div class="card-scene" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h2 class="date-display">1125–1132 рр.</h2>
+                    </div>
+                    <div class="card-face card-back">
+                        <p class="event-description">Правління <strong>Мстислава Великого</strong>, сина Володимира Мономаха — останнього правителя єдиної могутньої Київської Русі.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button class="nav-btn" id="prevBtn" aria-label="Попередня">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+
+            <span class="counter" id="counter">1 / 10</span>
+
+            <button class="nav-btn" id="nextBtn" aria-label="Наступна">
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const scenes = Array.from(document.querySelectorAll('.card-scene'));
+        const counter = document.getElementById('counter');
+        let currentIndex = 0;
+
+        function updateDeck(newIndex) {
+            if (scenes.length === 0) return;
+
+            const oldScene = scenes[currentIndex];
+            oldScene.classList.remove('is-active');
+            setTimeout(() => {
+                oldScene.querySelector('.card').classList.remove('is-flipped');
+            }, 700);
+
+            currentIndex = (newIndex + scenes.length) % scenes.length;
+            scenes[currentIndex].classList.add('is-active');
+            counter.textContent = (currentIndex + 1) + ' / ' + scenes.length;
+        }
+
+        counter.textContent = '1 / ' + scenes.length;
+
+        document.getElementById('prevBtn').addEventListener('click', () => updateDeck(currentIndex - 1));
+        document.getElementById('nextBtn').addEventListener('click', () => updateDeck(currentIndex + 1));
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') updateDeck(currentIndex + 1);
+            if (e.key === 'ArrowLeft') updateDeck(currentIndex - 1);
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                scenes[currentIndex].querySelector('.card').classList.toggle('is-flipped');
+            }
+        });
+    </script>
+</body>
+</html>
